@@ -71,7 +71,10 @@ import os
 import os.path
 from pprint import pprint
 from nltk.corpus import twitter_samples
+from itertools import chain
 import re
+import operator
+import sys
 
 
 number_of_topics = 6
@@ -171,8 +174,46 @@ def get_vector_applicant():
     with open("FeaturesWithout_Reg_Comma_PRP.txt","r") as text:
         tempdict = json.load(text)
         finder = BigramCollocationFinder.from_documents(tempdict.values())
-    print(finder.nbest(bigram_measures.raw_freq,10))
-    print(finder.word_fd.items())
+    print(finder.nbest(bigram_measures.raw_freq,15))
+    #amountWords = finder.word_fd.items()
+    sort_amountWords = sorted(finder.word_fd.items(), key=operator.itemgetter(1))
+    print(sort_amountWords)
+
+    synonyms = []
+    antonyms = []
+    for syn in wn.synsets("weight"):
+        for l in syn.lemmas():
+            synonyms.append(l.name())
+            if l.antonyms():
+                antonyms.append(l.antonyms()[0].name())
+    print(set(synonyms))
+    print(set(antonyms))
+
+    for i, j in enumerate(wn.synsets('weight')):
+        print("Meaning", i, "NLTK ID:", j.name())
+        print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
+        print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
+
+    for i, j in enumerate(wn.synsets('size')):
+        print("Meaning", i, "NLTK ID:", j.name())
+        print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
+        print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
+
+    for i, j in enumerate(wn.synsets('quality')):
+        print("Meaning", i, "NLTK ID:", j.name())
+        print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
+        print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
+
+    # weight = 'weight'
+    # light = 'light'
+    # hypoweight = set([i for i in weight.closure(lambda s: s.hyponyms())])
+    # light in hypoweight
+
+    # hyponyms = []
+    # for syn in wn.hyponyms("weight"):
+    #     for l in syn.lemmas():
+    #         hyponyms.append(l.name())
+    # print(set(hyponyms))
 
 #get_word_applicant()
 get_vector_applicant()
