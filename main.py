@@ -48,6 +48,7 @@ from gensim.models.coherencemodel import CoherenceModel
 from gensim.utils import simple_preprocess
 import nltk
 from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.metrics import BigramAssocMeasures
 from nltk.corpus import stopwords
 from string import punctuation
 from nltk.collocations import *
@@ -70,6 +71,8 @@ import os
 import os.path
 from pprint import pprint
 from nltk.corpus import twitter_samples
+import re
+
 
 number_of_topics = 6
 words = 20
@@ -137,13 +140,39 @@ def get_vector_applicant():
     with open('Features.txt', 'r') as file_handler:
         features_text = file_handler.readlines()
     # print(features_text)
+
     dict2 = {}
     for i in features_text:
-        dict2.update({counter : i})
+        strWithoutComma = i.replace(","," ")
+        strWithoutReg = strWithoutComma.lower()
+        tok_text = word_tokenize(strWithoutReg)
+        pos_text = pos_tag(tok_text)
+        sent_clean = [x for (x,y) in pos_text if (y not in ('PRP') and y not in ('DT') and y not in ('CC'))]
+        dict2.update({counter : sent_clean})
         counter += 1
 
-    with open("FeaturesWithID.txt", "w") as featuresWithIdFile:
-        for key,value in dict2.items():
-            featuresWithIdFile.write("{}: {}\n".format(key,value))
+    for key,value in dict2.items():
+        for tuple in value:
+            if (tuple =="I" or tuple=="i"):
+                value.remove(tuple)
+
+    # for key,value in dict2.items():
+    #     for tuple in value:
+    #         if ("PRP" and "I" and "i") in tuple:
+    #             value.remove(tuple)
+    #
+
+    with open("FeaturesWithout_Reg_Comma_PRP.txt", "w") as featuresWithout_Reg_Comma_PR:
+        # for key,value in dict2.items():
+        json.dump(dict2, featuresWithout_Reg_Comma_PR)
+        # featuresWithIdFile.write("{}: {}\n".format(key,value))
+
+    bigram_measures = nltk.collocations.BigramAssocMeasures()
+    with open("FeaturesWithout_Reg_Comma_PRP.txt","r") as text:
+        tempdict = json.load(text)
+        finder = BigramCollocationFinder.from_documents(tempdict.values())
+    print(finder.nbest(bigram_measures.raw_freq,10))
+    print(finder.word_fd.items())
+
 #get_word_applicant()
 get_vector_applicant()
