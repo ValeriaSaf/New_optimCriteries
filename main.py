@@ -75,6 +75,7 @@ from itertools import chain
 import re
 import operator
 import sys
+from collections import Counter
 
 
 number_of_topics = 6
@@ -148,22 +149,18 @@ def get_vector_applicant():
     for i in features_text:
         strWithoutComma = i.replace(","," ")
         strWithoutReg = strWithoutComma.lower()
-        tok_text = word_tokenize(strWithoutReg)
+        # value[value.index(word)] = re.sub(r"[^a-zA-Z]", " ", word)
+        strWithoutSymbol = re.sub(r"[^a-zA-Z]", " ", strWithoutReg)
+        tok_text = word_tokenize(strWithoutSymbol)
         pos_text = pos_tag(tok_text)
         sent_clean = [x for (x,y) in pos_text if (y not in ('PRP') and y not in ('DT') and y not in ('CC'))]
         dict2.update({counter : sent_clean})
         counter += 1
 
     for key,value in dict2.items():
-        for tuple in value:
-            if (tuple =="I" or tuple=="i"):
-                value.remove(tuple)
-
-    # for key,value in dict2.items():
-    #     for tuple in value:
-    #         if ("PRP" and "I" and "i") in tuple:
-    #             value.remove(tuple)
-    #
+        for word in value:
+            if (word =="I" or word =="i"):
+                value.remove(word)
 
     with open("FeaturesWithout_Reg_Comma_PRP.txt", "w") as featuresWithout_Reg_Comma_PR:
         # for key,value in dict2.items():
@@ -179,15 +176,33 @@ def get_vector_applicant():
     sort_amountWords = sorted(finder.word_fd.items(), key=operator.itemgetter(1))
     print(sort_amountWords)
 
-    synonyms = []
-    antonyms = []
-    for syn in wn.synsets("weight"):
-        for l in syn.lemmas():
-            synonyms.append(l.name())
-            if l.antonyms():
-                antonyms.append(l.antonyms()[0].name())
-    print(set(synonyms))
-    print(set(antonyms))
+    synonyms = {}
+    lemmas = []
+    for word,number in sort_amountWords:
+        if number > 15:
+            lemmas.clear()
+            for syn in wn.synsets(word):
+                for l in syn.lemmas():
+                    lemmas.append(l.name())
+            synonyms.update({word : lemmas.copy()})
+    print(synonyms)
+
+
+    for tuple2 in sort_amountWords:
+        for origWord,synList in synonyms.items():
+            if tuple2[0] in synList:
+                lst = list(tuple2)
+                lst[0] = origWord
+                sort_amountWords[sort_amountWords.index(tuple2)] = tuple(lst)
+                break
+    print(sort_amountWords)
+
+    sort_amountWords_dict = dict(sort_amountWords)
+    c = Counter()
+    for word in sort_amountWords_dict:
+        c.update(word)
+    print("result:")
+    print(sort_amountWords_dict)
 
     for i, j in enumerate(wn.synsets('weight')):
         print("Meaning", i, "NLTK ID:", j.name())
