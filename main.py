@@ -204,31 +204,33 @@ def get_vector_applicant():
     print("result:")
     print(sort_amountWords_dict)
 
-    for i, j in enumerate(wn.synsets('weight')):
-        print("Meaning", i, "NLTK ID:", j.name())
-        print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
-        print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
+    Hypernyms = {}
+    Hyponyms = {}
+    for word,number in sort_amountWords_dict.items():
+        if number > 15:
+            for i,j in enumerate(wn.synsets(word)):
+                d = "Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()])))
+                x = "Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()])))
+            Hypernyms.update({word : d})
+            Hyponyms.update({word : x})
+    print(Hyponyms)
+    print(Hypernyms)
 
-    for i, j in enumerate(wn.synsets('size')):
-        print("Meaning", i, "NLTK ID:", j.name())
-        print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
-        print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
 
-    for i, j in enumerate(wn.synsets('quality')):
-        print("Meaning", i, "NLTK ID:", j.name())
-        print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
-        print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
-
-    # weight = 'weight'
-    # light = 'light'
-    # hypoweight = set([i for i in weight.closure(lambda s: s.hyponyms())])
-    # light in hypoweight
-
-    # hyponyms = []
-    # for syn in wn.hyponyms("weight"):
-    #     for l in syn.lemmas():
-    #         hyponyms.append(l.name())
-    # print(set(hyponyms))
+    # for i, j in enumerate(wn.synsets('weight')):
+    #     print("Meaning", i, "NLTK ID:", j.name())
+    #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
+    #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
+    #
+    # for i, j in enumerate(wn.synsets('size')):
+    #     print("Meaning", i, "NLTK ID:", j.name())
+    #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
+    #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
+    #
+    # for i, j in enumerate(wn.synsets('quality')):
+    #     print("Meaning", i, "NLTK ID:", j.name())
+    #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
+    #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
 
 #get_word_applicant()
 get_vector_applicant()
