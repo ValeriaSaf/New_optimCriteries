@@ -163,11 +163,11 @@ def get_vector_applicant():
                 value.remove(word)
 
     dct = {}
-    count = 0
+    count_all_words = 0
     for key, value in dict2.items():
         for word in value:
-            count += 1
-    print(count)
+            count_all_words += 1
+    print(count_all_words)
 
     with open("FeaturesWithout_Reg_Comma_PRP.txt", "w") as featuresWithout_Reg_Comma_PR:
         # for key,value in dict2.items():
@@ -238,6 +238,21 @@ def get_vector_applicant():
     with open("Features_on_Start.txt", "w") as Features_on_Start:
         # for key,value in dict2.items():
         json.dump(sorted_x, Features_on_Start)
+        # featuresWithIdFile.write("{}: {}\n".format(key,value))
+
+    dict_sort_amountWords = dict(sorted_x)
+    #print(dictionary)
+
+    result_dict_popural_feature = {}
+    alpha = 0.0085
+    for key,value in dict_sort_amountWords.items():
+        if (value/count_all_words) >= alpha:
+            result_dict_popural_feature.update({key : value})
+    #print(result_dict_popural_feature)
+
+    with open("Features_popular.txt", "w") as Features_popular:
+        # for key,value in dict2.items():
+        json.dump(result_dict_popural_feature, Features_popular)
         # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
     # hype = []
