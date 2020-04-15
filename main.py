@@ -153,7 +153,7 @@ def get_vector_applicant():
         strWithoutSymbol = re.sub(r"[^a-zA-Z]", " ", strWithoutReg)
         tok_text = word_tokenize(strWithoutSymbol)
         pos_text = pos_tag(tok_text)
-        sent_clean = [x for (x,y) in pos_text if (y not in ('PRP') and y not in ('DT') and y not in ('CC'))]
+        sent_clean = [x for (x,y) in pos_text if (y not in ('PRP') and y not in ('DT') and y not in ('CC')) and y not in ('VB')]
         dict2.update({counter : sent_clean})
         counter += 1
 
@@ -161,6 +161,13 @@ def get_vector_applicant():
         for word in value:
             if (word =="I" or word =="i"):
                 value.remove(word)
+
+    dct = {}
+    count = 0
+    for key, value in dict2.items():
+        for word in value:
+            count += 1
+    print(count)
 
     with open("FeaturesWithout_Reg_Comma_PRP.txt", "w") as featuresWithout_Reg_Comma_PR:
         # for key,value in dict2.items():
@@ -206,28 +213,45 @@ def get_vector_applicant():
 
     Hypernyms = {}
     Hyponyms = {}
+    hyp = []
     for word,number in sort_amountWords_dict.items():
-        if number > 15:
+        if number < 15:
+            hyp.clear()
             for i,j in enumerate(wn.synsets(word)):
-                d = "Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()])))
-                x = "Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()])))
-            Hypernyms.update({word : d})
-            Hyponyms.update({word : x})
+                if i < 2:
+                    x = list(chain(*[l.lemma_names() for l in j.hyponyms()]))
+                    hyp.append(x)
+            Hyponyms.update({word : hyp.copy()})
     print(Hyponyms)
-    print(Hypernyms)
+
+    for key,value in Hyponyms.items():
+        for lst in value:
+            for word in lst:
+                for word_dict,number in sort_amountWords_dict.items():
+                    if number > 15:
+                        if word_dict in lst:
+                            sort_amountWords_dict.update({key: number})
+                            break
+    sorted_x = sorted(sort_amountWords_dict.items(), key=operator.itemgetter(1))
+    print(sorted_x)
+
+    with open("Features_on_Start.txt", "w") as Features_on_Start:
+        # for key,value in dict2.items():
+        json.dump(sorted_x, Features_on_Start)
+        # featuresWithIdFile.write("{}: {}\n".format(key,value))
+
+    # hype = []
+    # for word, number in sort_amountWords_dict.items():
+    #     if number > 15:
+    #         hype.clear()
+    #         for i, j in enumerate(wn.synsets(word)):
+    #             d = "Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()])))
+    #             hype.append(d)
+    #         Hypernyms.update({word: hype.copy()})
+    # print(Hypernyms)
 
 
     # for i, j in enumerate(wn.synsets('weight')):
-    #     print("Meaning", i, "NLTK ID:", j.name())
-    #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
-    #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
-    #
-    # for i, j in enumerate(wn.synsets('size')):
-    #     print("Meaning", i, "NLTK ID:", j.name())
-    #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
-    #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
-    #
-    # for i, j in enumerate(wn.synsets('quality')):
     #     print("Meaning", i, "NLTK ID:", j.name())
     #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
     #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
