@@ -302,7 +302,7 @@ def get_full_vector():
         for key, val in dict1.items():
             Initial_reviews_clean.write('{}:{}\n'.format(key, val))  # Dict.txt - file with clear review's text from future recycle
 
-    with open("Initial_reviews_clean", "r") as Initial_reviews_clean:
+    with open("Initial_reviews_clean.txt", "r") as Initial_reviews_clean:
         documents = Initial_reviews_clean.read().splitlines()
     # print(documents)
 
