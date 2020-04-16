@@ -42,6 +42,10 @@ import numpy as np
 from numpy import *
 import json
 import gensim
+import string
+import random
+import bs4 as bs
+import urllib.request
 from gensim import corpora
 from gensim.models import LsiModel
 from gensim.models.coherencemodel import CoherenceModel
@@ -77,7 +81,7 @@ import operator
 import sys
 from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
-
+import heapq
 
 number_of_topics = 6
 words = 20
@@ -139,6 +143,7 @@ def get_word_applicant():
     file_handler.close()
     return t
 
+
 def get_vector_applicant():
     counter = 1
     with open('Features.txt', 'r') as file_handler:
@@ -147,19 +152,20 @@ def get_vector_applicant():
 
     dict2 = {}
     for i in features_text:
-        strWithoutComma = i.replace(","," ")
+        strWithoutComma = i.replace(",", " ")
         strWithoutReg = strWithoutComma.lower()
         # value[value.index(word)] = re.sub(r"[^a-zA-Z]", " ", word)
         strWithoutSymbol = re.sub(r"[^a-zA-Z]", " ", strWithoutReg)
         tok_text = word_tokenize(strWithoutSymbol)
         pos_text = pos_tag(tok_text)
-        sent_clean = [x for (x,y) in pos_text if (y not in ('PRP') and y not in ('DT') and y not in ('CC')) and y not in ('VB')]
-        dict2.update({counter : sent_clean})
+        sent_clean = [x for (x, y) in pos_text if
+                      (y not in ('PRP') and y not in ('DT') and y not in ('CC')) and y not in ('VB')]
+        dict2.update({counter: sent_clean})
         counter += 1
 
-    for key,value in dict2.items():
+    for key, value in dict2.items():
         for word in value:
-            if (word =="I" or word =="i"):
+            if (word == "I" or word == "i"):
                 value.remove(word)
 
     dct = {}
@@ -175,28 +181,27 @@ def get_vector_applicant():
         # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
     bigram_measures = nltk.collocations.BigramAssocMeasures()
-    with open("FeaturesWithout_Reg_Comma_PRP.txt","r") as text:
+    with open("FeaturesWithout_Reg_Comma_PRP.txt", "r") as text:
         tempdict = json.load(text)
         finder = BigramCollocationFinder.from_documents(tempdict.values())
-    print(finder.nbest(bigram_measures.raw_freq,15))
-    #amountWords = finder.word_fd.items()
+    print(finder.nbest(bigram_measures.raw_freq, 15))
+    # amountWords = finder.word_fd.items()
     sort_amountWords = sorted(finder.word_fd.items(), key=operator.itemgetter(1))
     print(sort_amountWords)
 
     synonyms = {}
     lemmas = []
-    for word,number in sort_amountWords:
+    for word, number in sort_amountWords:
         if number > 15:
             lemmas.clear()
             for syn in wn.synsets(word):
                 for l in syn.lemmas():
                     lemmas.append(l.name())
-            synonyms.update({word : lemmas.copy()})
+            synonyms.update({word: lemmas.copy()})
     print(synonyms)
 
-
     for tuple2 in sort_amountWords:
-        for origWord,synList in synonyms.items():
+        for origWord, synList in synonyms.items():
             if tuple2[0] in synList:
                 lst = list(tuple2)
                 lst[0] = origWord
@@ -214,20 +219,20 @@ def get_vector_applicant():
     Hypernyms = {}
     Hyponyms = {}
     hyp = []
-    for word,number in sort_amountWords_dict.items():
+    for word, number in sort_amountWords_dict.items():
         if number < 15:
             hyp.clear()
-            for i,j in enumerate(wn.synsets(word)):
+            for i, j in enumerate(wn.synsets(word)):
                 if i < 2:
                     x = list(chain(*[l.lemma_names() for l in j.hyponyms()]))
                     hyp.append(x)
-            Hyponyms.update({word : hyp.copy()})
+            Hyponyms.update({word: hyp.copy()})
     print(Hyponyms)
 
-    for key,value in Hyponyms.items():
+    for key, value in Hyponyms.items():
         for lst in value:
             for word in lst:
-                for word_dict,number in sort_amountWords_dict.items():
+                for word_dict, number in sort_amountWords_dict.items():
                     if number > 15:
                         if word_dict in lst:
                             sort_amountWords_dict.update({key: number})
@@ -241,38 +246,38 @@ def get_vector_applicant():
         # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
     dict_sort_amountWords = dict(sorted_x)
-    #print(dict_sort_amountWords)
+    # print(dict_sort_amountWords)
 
     result_dict_popural_feature = {}
     alpha = 0.0085
-    for key,value in dict_sort_amountWords.items():
-        if (value/count_all_words) >= alpha:
-            result_dict_popural_feature.update({key : value})
+    for key, value in dict_sort_amountWords.items():
+        if (value / count_all_words) >= alpha:
+            result_dict_popural_feature.update({key: value})
     print(result_dict_popural_feature)
 
     amount_items = 0
     for kye in result_dict_popural_feature.keys():
-        amount_items+=1
+        amount_items += 1
     print(amount_items)
 
     countr = 0
     pos_text1 = pos_tag(result_dict_popural_feature.keys())
     sent_clean = [x for (x, y) in pos_text1 if
-                  (y != ('PRP') and y != ('DT') and y != ('CC') and y != ('VB') and y !=('VBP') and y !=('VBN') and y !=('VBG') and y !=('RB'))]
+                  (y != ('PRP') and y != ('DT') and y != ('CC') and y != ('VB') and y != ('VBP') and y != (
+                      'VBN') and y != ('VBG') and y != ('RB'))]
 
     tempDict = dict(result_dict_popural_feature)
     for key1, value in tempDict.items():
         if key1 not in sent_clean:
             del result_dict_popural_feature[key1]
-    #print(result_dict_popural_feature)
-
+    # print(result_dict_popural_feature)
 
     tempDict_1 = dict(result_dict_popural_feature)
-    for key,value in tempDict_1.items():
+    for key, value in tempDict_1.items():
         countrr = 0
         for x in key:
-            countrr+=1
-        #print(countrr)
+            countrr += 1
+        # print(countrr)
         if countrr < 3:
             del result_dict_popural_feature[x]
     print(result_dict_popural_feature)
@@ -285,50 +290,141 @@ def get_vector_applicant():
         json.dump(lst_features, Features_popular)
         # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
+
+def syn():
+    with open('Features_popular.txt', 'r') as Features_popular:
+        features_text = json.load(Features_popular)
+
+    synonyms = {}
+    lemmas = []
+    for word in features_text:
+        lemmas.clear()
+        for syn in wn.synsets(word):
+            for l in syn.lemmas():
+                lemmas.append(l.name())
+        synonyms.update({word: lemmas.copy()})
+    return synonyms
+
+
+def hypo():
+    with open('Features_popular.txt', 'r') as Features_popular:
+        features_text = json.load(Features_popular)
+
+    Hyponyms = {}
+    hyp = []
+    for word in features_text:
+        hyp.clear()
+        for i, j in enumerate(wn.synsets(word)):
+            if i < 1:
+                x = list(chain(*[l.lemma_names() for l in j.hyponyms()]))
+                hyp.append(x)
+        Hyponyms.update({word: hyp.copy()})
+    return Hyponyms
+
+
+def hype():
+    with open('Features_popular.txt', 'r') as Features_popular:
+        features_text = json.load(Features_popular)
+
+    Hypernyms = {}
+    hype = []
+    for word in features_text:
+        hype.clear()
+        for i, j in enumerate(wn.synsets(word)):
+            if i < 2:
+                x = list(chain(*[l.lemma_names() for l in j.hypernyms()]))
+                hype.append(x)
+        Hypernyms.update({word: hype.copy()})
+    return Hypernyms
+
+
 def get_full_vector():
     with open('trunc_Fashion.json', 'r') as f:
         jsonData = json.load(f)
 
-    dict1 = {}
+    corpus = []
     for i in jsonData:
-        if (i["overall"] >= 1) and (i["overall"] <= 5):
-            tok_text = word_tokenize(i["reviewText"])
-            customStopWords = set(stopwords.words('english') + list(punctuation))
-            WordsStopResult = [word for word in tok_text if word not in customStopWords]
-            lemmitazer_output = lemmatize_sentence(WordsStopResult)
-            dict1.update({i["id"]:lemmitazer_output})
+        corpus.append(i["reviewText"])
+    print(corpus)
 
-    with open('Initial_reviews_clean.txt', 'w') as Initial_reviews_clean:
-        for key, val in dict1.items():
-            Initial_reviews_clean.write('{}:{}\n'.format(key, val))  # Dict.txt - file with clear review's text from future recycle
+    # corpus_new = map(lambda x: x.lower(), corpus)
+    # print(corpus_new)
+    for i in range(len(corpus)):
+        corpus[i] = corpus[i].lower()
+        corpus[i] = re.sub(r'\W', ' ', corpus[i])
+        corpus[i] = re.sub(r'\s+', ' ', corpus[i])
+    print(corpus)
+    # print(len(corpus))
 
-    with open("Initial_reviews_clean.txt", "r") as Initial_reviews_clean:
-        documents = Initial_reviews_clean.read().splitlines()
-    # print(documents)
+    with open('Features_popular.txt', 'r') as Features_popular:
+        features_text = json.load(Features_popular)
+    print(features_text)
 
-    count_vectorizer = CountVectorizer()
-    bag_of_words = count_vectorizer.fit_transform(documents)
-    feature_names = count_vectorizer.get_feature_names()
-    pprint(pd.DataFrame(bag_of_words.toarray(), columns=feature_names), open("matrix.txt", "w"))
-    # with open("matrix.txt","w") as f: #вывод проиндексированной матрицы в файл
-    #     for i in range(len(bag_of_words.toarray())):
-    #         for j in range(len(bag_of_words.toarray()[i])):
-    #             f.write(str(bag_of_words.toarray()[i][j]))
-    #         f.write("\n")
+    synonym = syn()
+    hyponyms = hypo()
+    hypernyms = hype()
+    print(synonym)
 
-    from sklearn.feature_extraction.text import TfidfVectorizer
+    sentence_vectors = []
 
-    tfidf_vectorizer = TfidfVectorizer()
-    values = tfidf_vectorizer.fit_transform(documents)
-    feature_names = tfidf_vectorizer.get_feature_names()
-    print(pd.DataFrame(values.toarray(), columns=feature_names))
-    # with open("matrix.txt","w") as f:
-    #     for i in range(len(values.toarray())):
-    #         for j in range(len(values.toarray()[i])):
-    #             f.write(str(values.toarray()[i][j]))
-    #         f.write("\n")
+    for sentence in corpus:
+        sentence_tokens = nltk.word_tokenize(sentence)
+        sent_vec = []
+        for token in features_text:
+            flag = False
+            if token in sentence_tokens:
+                sent_vec.append(1)
+                flag = True
+            else:
+                for syno in synonym[token]:
+                    if syno in sentence_tokens:
+                        sent_vec.append(1)
+                        flag = True
+                        break
+            if not flag:
+                sent_vec.append(0)
+        sentence_vectors.append(sent_vec)
+    print(sentence_vectors)
+    # # dict1 = {}
+    # for i in jsonData:
+    #     if (i["overall"] >= 1) and (i["overall"] <= 5):
+    #         tok_text = word_tokenize(i["reviewText"])
+    #         customStopWords = set(stopwords.words('english') + list(punctuation))
+    #         WordsStopResult = [word for word in tok_text if word not in customStopWords]
+    #         lemmitazer_output = lemmatize_sentence(WordsStopResult)
+    #         dict1.update({i["id"]:lemmitazer_output})
+    #
+    # with open('Initial_reviews_clean.txt', 'w') as Initial_reviews_clean:
+    #     for key, val in dict1.items():
+    #         Initial_reviews_clean.write('{}:{}\n'.format(key, val))  # Dict.txt - file with clear review's text from future recycle
+    #
+    # with open("Initial_reviews_clean.txt", "r") as Initial_reviews_clean:
+    #     documents = Initial_reviews_clean.read().splitlines()
+    # # print(documents)
+    #
+    # count_vectorizer = CountVectorizer()
+    # bag_of_words = count_vectorizer.fit_transform(documents)
+    # feature_names = count_vectorizer.get_feature_names()
+    # pprint(pd.DataFrame(bag_of_words.toarray(), columns=feature_names), open("matrix.txt", "w"))
+    # # with open("matrix.txt","w") as f: #вывод проиндексированной матрицы в файл
+    # #     for i in range(len(bag_of_words.toarray())):
+    # #         for j in range(len(bag_of_words.toarray()[i])):
+    # #             f.write(str(bag_of_words.toarray()[i][j]))
+    # #         f.write("\n")
+    #
+    # from sklearn.feature_extraction.text import TfidfVectorizer
+    #
+    # tfidf_vectorizer = TfidfVectorizer()
+    # values = tfidf_vectorizer.fit_transform(documents)
+    # feature_names = tfidf_vectorizer.get_feature_names()
+    # print(pd.DataFrame(values.toarray(), columns=feature_names))
+    # # with open("matrix.txt","w") as f:
+    # #     for i in range(len(values.toarray())):
+    # #         for j in range(len(values.toarray()[i])):
+    # #             f.write(str(values.toarray()[i][j]))
+    # #         f.write("\n")
 
 
-get_word_applicant()
-get_vector_applicant()
+# get_word_applicant()
+# get_vector_applicant()
 get_full_vector()
