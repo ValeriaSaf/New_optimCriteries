@@ -76,6 +76,7 @@ import re
 import operator
 import sys
 from collections import Counter
+from sklearn.feature_extraction.text import CountVectorizer
 
 
 number_of_topics = 6
@@ -137,7 +138,6 @@ def get_word_applicant():
 
     file_handler.close()
     return t
-
 
 def get_vector_applicant():
     counter = 1
@@ -241,35 +241,94 @@ def get_vector_applicant():
         # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
     dict_sort_amountWords = dict(sorted_x)
-    #print(dictionary)
+    #print(dict_sort_amountWords)
 
     result_dict_popural_feature = {}
     alpha = 0.0085
     for key,value in dict_sort_amountWords.items():
         if (value/count_all_words) >= alpha:
             result_dict_popural_feature.update({key : value})
+    print(result_dict_popural_feature)
+
+    amount_items = 0
+    for kye in result_dict_popural_feature.keys():
+        amount_items+=1
+    print(amount_items)
+
+    countr = 0
+    pos_text1 = pos_tag(result_dict_popural_feature.keys())
+    sent_clean = [x for (x, y) in pos_text1 if
+                  (y != ('PRP') and y != ('DT') and y != ('CC') and y != ('VB') and y !=('VBP') and y !=('VBN') and y !=('VBG') and y !=('RB'))]
+
+    tempDict = dict(result_dict_popural_feature)
+    for key1, value in tempDict.items():
+        if key1 not in sent_clean:
+            del result_dict_popural_feature[key1]
     #print(result_dict_popural_feature)
+
+
+    tempDict_1 = dict(result_dict_popural_feature)
+    for key,value in tempDict_1.items():
+        countrr = 0
+        for x in key:
+            countrr+=1
+        #print(countrr)
+        if countrr < 3:
+            del result_dict_popural_feature[x]
+    print(result_dict_popural_feature)
+
+    lst_features = list(result_dict_popural_feature.keys())
+    print(lst_features)
 
     with open("Features_popular.txt", "w") as Features_popular:
         # for key,value in dict2.items():
-        json.dump(result_dict_popural_feature, Features_popular)
+        json.dump(lst_features, Features_popular)
         # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
-    # hype = []
-    # for word, number in sort_amountWords_dict.items():
-    #     if number > 15:
-    #         hype.clear()
-    #         for i, j in enumerate(wn.synsets(word)):
-    #             d = "Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()])))
-    #             hype.append(d)
-    #         Hypernyms.update({word: hype.copy()})
-    # print(Hypernyms)
+def get_full_vector():
+    with open('trunc_Fashion.json', 'r') as f:
+        jsonData = json.load(f)
+
+    dict1 = {}
+    for i in jsonData:
+        if (i["overall"] >= 1) and (i["overall"] <= 5):
+            tok_text = word_tokenize(i["reviewText"])
+            customStopWords = set(stopwords.words('english') + list(punctuation))
+            WordsStopResult = [word for word in tok_text if word not in customStopWords]
+            lemmitazer_output = lemmatize_sentence(WordsStopResult)
+            dict1.update({i["id"]:lemmitazer_output})
+
+    with open('Initial_reviews_clean.txt', 'w') as Initial_reviews_clean:
+        for key, val in dict1.items():
+            Initial_reviews_clean.write('{}:{}\n'.format(key, val))  # Dict.txt - file with clear review's text from future recycle
+
+    with open("Initial_reviews_clean", "r") as Initial_reviews_clean:
+        documents = Initial_reviews_clean.read().splitlines()
+    # print(documents)
+
+    count_vectorizer = CountVectorizer()
+    bag_of_words = count_vectorizer.fit_transform(documents)
+    feature_names = count_vectorizer.get_feature_names()
+    pprint(pd.DataFrame(bag_of_words.toarray(), columns=feature_names), open("matrix.txt", "w"))
+    # with open("matrix.txt","w") as f: #вывод проиндексированной матрицы в файл
+    #     for i in range(len(bag_of_words.toarray())):
+    #         for j in range(len(bag_of_words.toarray()[i])):
+    #             f.write(str(bag_of_words.toarray()[i][j]))
+    #         f.write("\n")
+
+    from sklearn.feature_extraction.text import TfidfVectorizer
+
+    tfidf_vectorizer = TfidfVectorizer()
+    values = tfidf_vectorizer.fit_transform(documents)
+    feature_names = tfidf_vectorizer.get_feature_names()
+    print(pd.DataFrame(values.toarray(), columns=feature_names))
+    # with open("matrix.txt","w") as f:
+    #     for i in range(len(values.toarray())):
+    #         for j in range(len(values.toarray()[i])):
+    #             f.write(str(values.toarray()[i][j]))
+    #         f.write("\n")
 
 
-    # for i, j in enumerate(wn.synsets('weight')):
-    #     print("Meaning", i, "NLTK ID:", j.name())
-    #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
-    #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
-
-#get_word_applicant()
+get_word_applicant()
 get_vector_applicant()
+get_full_vector()
