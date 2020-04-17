@@ -341,6 +341,13 @@ def hype():
         Hypernyms.update({word: hype.copy()})
     return Hypernyms
 
+def semantic_score(word1, word2):
+    try:
+        w1 = wn.synset("%s.n.01" % (word1))
+        w2 = wn.synset("%s.n.01" % (word2))
+        return wn.wup_similarity(w1, w2, simulate_root=False)
+    except:
+        return 0
 
 def get_full_vector():
     with open('trunc_Fashion.json', 'r') as f:
@@ -381,26 +388,45 @@ def get_full_vector():
             else:
                 for syno in synonym[token]:
                     if syno in sentence_tokens:
-                        sent_vec.append(1)
-                        flag = True
-                        break
+                        count = semantic_score(syno,sentence_tokens[sentence_tokens.index(syno)])
+                        if (count >= 0.5):
+                            sent_vec.append(1)
+                            flag = True
+                            break
             if not flag:
                 sent_vec.append(0)
         sentence_vectors.append(sent_vec)
+    #sentence_vectors = np.asarray(sentence_vectors)
+    sentence_vectors = np.matrix(sentence_vectors)
+
+    with open('Matrix_vectors.txt', 'wb') as f:
+        for line in sentence_vectors:
+            np.savetxt(f, line, fmt='%.2f')
+
     print(sentence_vectors)
 
-    input_word = "work"
-    t = Thesaurus(input_word)
-    print(t.get_synonym(pos='adj'))
-
-def similar_defin():
-    defin = wn.synsets("quality")
-    print(defin[0].definition())
+# def Thesaurus():
+    # input_word = "work"
+    # t = Thesaurus(input_word)
+    # print(t.get_synonym(pos='adj'))
 
 
-    defin1 = wn.synsets("good")
-    print(defin1[0].definition())
-
+# def get_best_synset_pair(word_1, word_2):
+#     synsets_1 = wn.synsets(word_1)
+#     synsets_2 = wn.synsets(word_2)
+#     if len(synsets_1) == 0 or len(synsets_2) == 0:
+#         return None, None
+#     else:
+#         max_sim = -1.0
+#         best_pair = None, None
+#         for synset_1 in synsets_1:
+#             for synset_2 in synsets_2:
+#                 sim = wn.path_similarity(synset_1, synset_2)
+#                 sim = int(sim)
+#                 if sim > max_sim:
+#                     max_sim = sim
+#                     best_pair = synset_1, synset_2
+#         return best_pair
 
     # for i, j in enumerate(wn.synsets('dog')):
     #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
@@ -408,54 +434,8 @@ def similar_defin():
 
 
 
-
-
-    # print(t.get_synonym(pos='verb'))
-
-        # # dict1 = {}
-    # for i in jsonData:
-    #     if (i["overall"] >= 1) and (i["overall"] <= 5):
-    #         tok_text = word_tokenize(i["reviewText"])
-    #         customStopWords = set(stopwords.words('english') + list(punctuation))
-    #         WordsStopResult = [word for word in tok_text if word not in customStopWords]
-    #         lemmitazer_output = lemmatize_sentence(WordsStopResult)
-    #         dict1.update({i["id"]:lemmitazer_output})
-    #
-    # with open('Initial_reviews_clean.txt', 'w') as Initial_reviews_clean:
-    #     for key, val in dict1.items():
-    #         Initial_reviews_clean.write('{}:{}\n'.format(key, val))  # Dict.txt - file with clear review's text from future recycle
-    #
-    # with open("Initial_reviews_clean.txt", "r") as Initial_reviews_clean:
-    #     documents = Initial_reviews_clean.read().splitlines()
-    # # print(documents)
-    #
-    # count_vectorizer = CountVectorizer()
-    # bag_of_words = count_vectorizer.fit_transform(documents)
-    # feature_names = count_vectorizer.get_feature_names()
-    # pprint(pd.DataFrame(bag_of_words.toarray(), columns=feature_names), open("matrix.txt", "w"))
-    # # with open("matrix.txt","w") as f: #вывод проиндексированной матрицы в файл
-    # #     for i in range(len(bag_of_words.toarray())):
-    # #         for j in range(len(bag_of_words.toarray()[i])):
-    # #             f.write(str(bag_of_words.toarray()[i][j]))
-    # #         f.write("\n")
-    #
-    # from sklearn.feature_extraction.text import TfidfVectorizer
-    #
-    # tfidf_vectorizer = TfidfVectorizer()
-    # values = tfidf_vectorizer.fit_transform(documents)
-    # feature_names = tfidf_vectorizer.get_feature_names()
-    # print(pd.DataFrame(values.toarray(), columns=feature_names))
-    # # with open("matrix.txt","w") as f:
-    # #     for i in range(len(values.toarray())):
-    # #         for j in range(len(values.toarray()[i])):
-    # #             f.write(str(values.toarray()[i][j]))
-    # #         f.write("\n")
-
-
 # get_word_applicant()
 # get_vector_applicant()
-#get_full_vector()
-similar_defin()
-import sentSimilarity
-print("Similarity(\"%s\", \"%s\") = %s" % (
-"essential and distinguishing attribute of something or someone", "good things", sentSimilarity.sentence_similarity('essential and distinguishing attribute of something or someone', 'good things',ignore_integers=True)))
+get_full_vector()
+
+
