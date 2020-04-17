@@ -44,7 +44,9 @@ import json
 import gensim
 import string
 import random
+import requests
 import bs4 as bs
+from bs4 import BeautifulSoup
 import urllib.request
 from gensim import corpora
 from gensim.models import LsiModel
@@ -82,6 +84,8 @@ import sys
 from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 import heapq
+from PyDictionary import PyDictionary
+from py_thesaurus import Thesaurus
 
 number_of_topics = 6
 words = 20
@@ -366,7 +370,6 @@ def get_full_vector():
     print(synonym)
 
     sentence_vectors = []
-
     for sentence in corpus:
         sentence_tokens = nltk.word_tokenize(sentence)
         sent_vec = []
@@ -385,7 +388,31 @@ def get_full_vector():
                 sent_vec.append(0)
         sentence_vectors.append(sent_vec)
     print(sentence_vectors)
-    # # dict1 = {}
+
+    input_word = "work"
+    t = Thesaurus(input_word)
+    print(t.get_synonym(pos='adj'))
+
+def similar_defin():
+    defin = wn.synsets("quality")
+    print(defin[0].definition())
+
+
+    defin1 = wn.synsets("good")
+    print(defin1[0].definition())
+
+
+    # for i, j in enumerate(wn.synsets('dog')):
+    #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
+    #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
+
+
+
+
+
+    # print(t.get_synonym(pos='verb'))
+
+        # # dict1 = {}
     # for i in jsonData:
     #     if (i["overall"] >= 1) and (i["overall"] <= 5):
     #         tok_text = word_tokenize(i["reviewText"])
@@ -427,4 +454,8 @@ def get_full_vector():
 
 # get_word_applicant()
 # get_vector_applicant()
-get_full_vector()
+#get_full_vector()
+similar_defin()
+import sentSimilarity
+print("Similarity(\"%s\", \"%s\") = %s" % (
+"essential and distinguishing attribute of something or someone", "good things", sentSimilarity.sentence_similarity('essential and distinguishing attribute of something or someone', 'good things',ignore_integers=True)))
