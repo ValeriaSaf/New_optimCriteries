@@ -37,6 +37,7 @@ WP$ possessive wh-pronoun whose
 WRB wh-abverb where, when
 '''
 
+import nltk.sentiment.sentiment_analyzer
 import pandas as pd
 import numpy as np
 from numpy import *
@@ -84,10 +85,11 @@ import sys
 from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 import heapq
-from PyDictionary import PyDictionary
-from py_thesaurus import Thesaurus
+# from PyDictionary import PyDictionary
+# from py_thesaurus import Thesaurus
+import gensim, logging
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-number_of_topics = 6
 words = 20
 stemmer = SnowballStemmer('english')
 
@@ -104,6 +106,7 @@ def lemmatize_sentence(tokens):
             pos = 'a'
         lemmatized_sentence.append(lemmatizer.lemmatize(word, pos))
     return lemmatized_sentence
+
 
 
 def get_word_applicant():
@@ -147,10 +150,14 @@ def get_word_applicant():
     file_handler.close()
     return t
 
+
+
 def dict_stop_word():
     myself_dict_stop = ['good','great','cool','ok','love','hate','i','perfect','kind','well','nice',
                         'one','help','have','some','want','put','home','even','went','try','take']
     return myself_dict_stop
+
+
 
 def get_vector_applicant():
     counter = 1
@@ -305,6 +312,7 @@ def get_vector_applicant():
         # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
 
+
 def syn():
     with open('Features_popular.txt', 'r') as Features_popular:
         features_text = json.load(Features_popular)
@@ -318,6 +326,7 @@ def syn():
                 lemmas.append(l.name())
         synonyms.update({word: lemmas.copy()})
     return synonyms
+
 
 
 def hypo():
@@ -336,6 +345,7 @@ def hypo():
     return Hyponyms
 
 
+
 def hype():
     with open('Features_popular.txt', 'r') as Features_popular:
         features_text = json.load(Features_popular)
@@ -351,6 +361,8 @@ def hype():
         Hypernyms.update({word: hype.copy()})
     return Hypernyms
 
+
+
 def semantic_score(word1, word2):
     try:
         w1 = wn.synset("%s.n.01" % (word1))
@@ -358,6 +370,24 @@ def semantic_score(word1, word2):
         return wn.wup_similarity(w1, w2, simulate_root=False)
     except:
         return 0
+
+
+
+def NegativeWord():
+    with open('trunc_Fashion.json', 'r') as f:
+        jsonData = json.load(f)
+
+    tag_negative_words = []
+    for i in jsonData:
+        text = i["reviewText"].split()
+        analysis = nltk.sentiment.util.mark_negation(text)
+        tag_negative_words.append(analysis)
+    #print(tag_negative_words)
+    with open("Tag_nagative.txt", "w") as tag_negative:
+        json.dump(tag_negative_words, tag_negative)
+    return tag_negative_words
+
+
 
 def get_full_vector():
     with open('trunc_Fashion.json', 'r') as f:
@@ -382,19 +412,20 @@ def get_full_vector():
     print(features_text)
 
     synonym = syn()
-    hyponyms = hypo()
-    hypernyms = hype()
-    print(synonym)
-
     sentence_vectors = []
-    for sentence in corpus:
-        sentence_tokens = nltk.word_tokenize(sentence)
+    tag_neg = NegativeWord()
+    for sentence_tokens in tag_neg:
+        # sentence_tokens = nltk.word_tokenize(sentence)
         sent_vec = []
         for token in features_text:
             flag = False
             if token in sentence_tokens:
-                sent_vec.append(1)
-                flag = True
+                    if token + '_NEG' in sentence_tokens:
+                        sent_vec.append(-1)
+                        flag = True
+                    else:
+                        sent_vec.append(1)
+                        flag = True
             else:
                 for syno in synonym[token]:
                     if syno in sentence_tokens:
@@ -403,40 +434,40 @@ def get_full_vector():
                             sent_vec.append(1)
                             flag = True
                             break
+                    else:
+                        if syno+"_NEG" in sentence_tokens:
+                            count = semantic_score(syno, sentence_tokens[sentence_tokens.index(syno + "_NEG")][:-4])
+                            if (count >= 0.5):
+                                sent_vec.append(-1)
+                                flag = True
+                                break
             if not flag:
                 sent_vec.append(0)
         sentence_vectors.append(sent_vec)
+    print(sent_vec)
     #sentence_vectors = np.asarray(sentence_vectors)
     sentence_vectors = np.matrix(sentence_vectors)
 
     with open('Matrix_vectors.txt', 'wb') as f:
         for line in sentence_vectors:
             np.savetxt(f, line, fmt='%.2f')
-
     print(sentence_vectors)
+
+from gensim.models import Word2Vec
+from nltk.corpus import gutenberg
+def word2_vec():
+    sentences = [['first', 'sentence'], ['second', 'sentence']]
+    # train word2vec on the two sentences
+    model = gensim.models.Word2Vec(sentences, min_count=1)
+    sim = model.wv.most_similar('first')
+    for w,s in sim:
+        print(w,s)
+
 
 # def Thesaurus():
     # input_word = "work"
     # t = Thesaurus(input_word)
     # print(t.get_synonym(pos='adj'))
-
-
-# def get_best_synset_pair(word_1, word_2):
-#     synsets_1 = wn.synsets(word_1)
-#     synsets_2 = wn.synsets(word_2)
-#     if len(synsets_1) == 0 or len(synsets_2) == 0:
-#         return None, None
-#     else:
-#         max_sim = -1.0
-#         best_pair = None, None
-#         for synset_1 in synsets_1:
-#             for synset_2 in synsets_2:
-#                 sim = wn.path_similarity(synset_1, synset_2)
-#                 sim = int(sim)
-#                 if sim > max_sim:
-#                     max_sim = sim
-#                     best_pair = synset_1, synset_2
-#         return best_pair
 
     # for i, j in enumerate(wn.synsets('dog')):
     #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
@@ -445,7 +476,6 @@ def get_full_vector():
 
 
 # get_word_applicant()
-get_vector_applicant()
+# get_vector_applicant()
 get_full_vector()
-
 
