@@ -147,6 +147,10 @@ def get_word_applicant():
     file_handler.close()
     return t
 
+def dict_stop_word():
+    myself_dict_stop = ['good','great','cool','ok','love','hate','i','perfect','kind','well','nice',
+                        'one','help','have','some','want','put','home','even','went','try','take']
+    return myself_dict_stop
 
 def get_vector_applicant():
     counter = 1
@@ -284,7 +288,13 @@ def get_vector_applicant():
         # print(countrr)
         if countrr < 3:
             del result_dict_popural_feature[x]
-    print(result_dict_popural_feature)
+    #print(result_dict_popural_feature)
+
+    stop_word_my = dict_stop_word()
+    tempDict2 = dict(result_dict_popural_feature)
+    for key2 in tempDict2.keys():
+        if key2 in stop_word_my:
+            del result_dict_popural_feature[key2]
 
     lst_features = list(result_dict_popural_feature.keys())
     print(lst_features)
@@ -435,7 +445,7 @@ def get_full_vector():
 
 
 # get_word_applicant()
-# get_vector_applicant()
+get_vector_applicant()
 get_full_vector()
 
 

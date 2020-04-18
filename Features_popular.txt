@@ -1,1 +1,1 @@
-["material", "color", "kind", "arch", "love", "wear", "perfect", "term", "time", "individual", "pair", "weight", "foot", "help", "great", "situation", "size", "good", "quality", "light", "fit", "fashion", "way", "activity", "style", "comfortable", "shoe"]
+["material", "color", "arch", "wear", "term", "time", "individual", "pair", "weight", "foot", "situation", "size", "quality", "light", "fit", "fashion", "way", "activity", "style", "comfortable", "shoe"]
