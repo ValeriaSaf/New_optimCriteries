@@ -89,6 +89,7 @@ import heapq
 # from py_thesaurus import Thesaurus
 import gensim, logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+from sklearn.linear_model import LogisticRegression
 
 words = 20
 stemmer = SnowballStemmer('english')
@@ -377,14 +378,21 @@ def NegativeWord():
     with open('trunc_Fashion.json', 'r') as f:
         jsonData = json.load(f)
 
-    tag_negative_words = []
-    for i in jsonData:
+    tag_negative_words = list(copy(jsonData))
+    for i in tag_negative_words:
         text = i["reviewText"].split()
+        customStopWords = set(stopwords.words('english') + list(punctuation))
+        WordsStopResult = [word for word in text if word not in customStopWords]
+        lemmitazer_output = lemmatize_sentence(WordsStopResult)
         analysis = nltk.sentiment.util.mark_negation(text)
-        tag_negative_words.append(analysis)
+        i.update({"reviewText": analysis})
+        del(i["label"])
+
     #print(tag_negative_words)
+
     with open("Tag_nagative.txt", "w") as tag_negative:
-        json.dump(tag_negative_words, tag_negative)
+        json.dump(tag_negative_words, tag_negative, indent=4)
+
     return tag_negative_words
 
 
@@ -414,7 +422,8 @@ def get_full_vector():
     synonym = syn()
     sentence_vectors = []
     tag_neg = NegativeWord()
-    for sentence_tokens in tag_neg:
+    for i in tag_neg:
+        sentence_tokens = i["reviewText"]
         # sentence_tokens = nltk.word_tokenize(sentence)
         sent_vec = []
         for token in features_text:
@@ -444,34 +453,36 @@ def get_full_vector():
             if not flag:
                 sent_vec.append(0)
         sentence_vectors.append(sent_vec)
-    print(sent_vec)
+    #print(sentence_vectors)
     #sentence_vectors = np.asarray(sentence_vectors)
     sentence_vectors = np.matrix(sentence_vectors)
 
     with open('Matrix_vectors.txt', 'wb') as f:
         for line in sentence_vectors:
             np.savetxt(f, line, fmt='%.2f')
-    print(sentence_vectors)
+    #print(sentence_vectors)
 
-from gensim.models import Word2Vec
-from nltk.corpus import gutenberg
-def word2_vec():
-    sentences = [['first', 'sentence'], ['second', 'sentence']]
-    # train word2vec on the two sentences
-    model = gensim.models.Word2Vec(sentences, min_count=1)
-    sim = model.wv.most_similar('first')
-    for w,s in sim:
-        print(w,s)
-
-
+    return sentence_vectors
+# from gensim.models import Word2Vec
+# from nltk.corpus import gutenberg
+# def word2_vec():
+#     sentences = [['first', 'sentence'], ['second', 'sentence']]
+#     # train word2vec on the two sentences
+#     model = gensim.models.Word2Vec(sentences, min_count=1)
+#     sim = model.wv.most_similar('first')
+#     for w,s in sim:
+#         print(w,s)
 # def Thesaurus():
     # input_word = "work"
     # t = Thesaurus(input_word)
     # print(t.get_synonym(pos='adj'))
-
     # for i, j in enumerate(wn.synsets('dog')):
     #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
     #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
+
+def Logistic_Reression():
+    lg_clf = Logistic_Reression()
+
 
 
 
