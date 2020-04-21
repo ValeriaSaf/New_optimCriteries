@@ -83,6 +83,8 @@ import re
 import operator
 import sys
 from collections import Counter
+import sklearn
+from sklearn.model_selection import train_test_split as train
 from sklearn.feature_extraction.text import CountVectorizer
 import heapq
 # from PyDictionary import PyDictionary
@@ -90,6 +92,7 @@ import heapq
 import gensim, logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 from sklearn.linear_model import LogisticRegression
+import csv
 
 words = 20
 stemmer = SnowballStemmer('english')
@@ -381,11 +384,11 @@ def NegativeWord():
     tag_negative_words = list(copy(jsonData))
     for i in tag_negative_words:
         text = i["reviewText"].split()
-        customStopWords = set(stopwords.words('english') + list(punctuation))
-        WordsStopResult = [word for word in text if word not in customStopWords]
-        lemmitazer_output = lemmatize_sentence(WordsStopResult)
         analysis = nltk.sentiment.util.mark_negation(text)
-        i.update({"reviewText": analysis})
+        customStopWords = set(stopwords.words('english') + list(punctuation))
+        WordsStopResult = [word for word in analysis if word not in customStopWords]
+        lemmitazer_output = lemmatize_sentence(WordsStopResult)
+        i.update({"reviewText": lemmitazer_output})
         del(i["label"])
 
     #print(tag_negative_words)
@@ -425,42 +428,54 @@ def get_full_vector():
     for i in tag_neg:
         sentence_tokens = i["reviewText"]
         # sentence_tokens = nltk.word_tokenize(sentence)
-        sent_vec = []
+        sent_vec = {}
+        sent_vec.update({"overall" : i["overall"]})
         for token in features_text:
             flag = False
             if token in sentence_tokens:
                     if token + '_NEG' in sentence_tokens:
-                        sent_vec.append(-1)
+                        sent_vec.update({token : -1})
                         flag = True
                     else:
-                        sent_vec.append(1)
+                        sent_vec.update({token : 1})
                         flag = True
             else:
                 for syno in synonym[token]:
                     if syno in sentence_tokens:
                         count = semantic_score(syno,sentence_tokens[sentence_tokens.index(syno)])
                         if (count >= 0.5):
-                            sent_vec.append(1)
+                            sent_vec.update({token : 1})
                             flag = True
                             break
                     else:
                         if syno+"_NEG" in sentence_tokens:
                             count = semantic_score(syno, sentence_tokens[sentence_tokens.index(syno + "_NEG")][:-4])
                             if (count >= 0.5):
-                                sent_vec.append(-1)
+                                sent_vec.update({token : -1})
                                 flag = True
                                 break
             if not flag:
-                sent_vec.append(0)
+                sent_vec.update({token : 0})
         sentence_vectors.append(sent_vec)
     #print(sentence_vectors)
     #sentence_vectors = np.asarray(sentence_vectors)
-    sentence_vectors = np.matrix(sentence_vectors)
 
-    with open('Matrix_vectors.txt', 'wb') as f:
-        for line in sentence_vectors:
-            np.savetxt(f, line, fmt='%.2f')
-    #print(sentence_vectors)
+    print(sentence_vectors)
+
+    with open("Data_vector_reviews.csv", "w", newline="") as file:
+        columns = sentence_vectors[0].keys()
+        writer = csv.DictWriter(file, fieldnames=columns)
+        writer.writeheader()
+        # запись нескольких строк
+        writer.writerows(sentence_vectors)
+
+
+    # sentence_vectors = np.matrix(sentence_vectors)
+
+    # with open('Matrix_vectors.txt', 'wb') as f:
+    #     for line in sentence_vectors:
+    #         np.savetxt(f, line, fmt='%.2f')
+    # #print(sentence_vectors)
 
     return sentence_vectors
 # from gensim.models import Word2Vec
@@ -480,13 +495,21 @@ def get_full_vector():
     #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
     #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
 
+
 def Logistic_Reression():
-    lg_clf = Logistic_Reression()
+    data = pd.read_csv('Data_vector_reviews.csv')
+    X = data.values[::, 1:21]
+    y = data.values[::, 0:1]
+
+    X_train, X_test, y_train, y_test = train(X, y, test_size=0.6)
+    lg_clf = LogisticRegression()
+    lg_clf.fit(X_train,y_train.values.ravel())
 
 
 
 
 # get_word_applicant()
 # get_vector_applicant()
-get_full_vector()
+#get_full_vector()
+Logistic_Reression()
 
