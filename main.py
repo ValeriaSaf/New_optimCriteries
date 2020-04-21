@@ -92,6 +92,7 @@ import heapq
 import gensim, logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 import csv
 
 words = 20
@@ -503,7 +504,12 @@ def Logistic_Reression():
 
     X_train, X_test, y_train, y_test = train(X, y, test_size=0.6)
     lg_clf = LogisticRegression()
-    lg_clf.fit(X_train,y_train.values.ravel())
+    y_train = y_train.ravel()
+    lg_clf.fit(X_train, y_train)
+
+    lg_clf_prediction = lg_clf.predict(X_test)
+    print(accuracy_score(lg_clf_prediction, y_test))
+
 
 
 
