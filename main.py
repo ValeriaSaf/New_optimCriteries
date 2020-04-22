@@ -496,6 +496,7 @@ def get_full_vector():
     #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
     #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
 
+
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit
@@ -503,8 +504,11 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import Lasso
 from sklearn.model_selection import cross_val_score
+import matplotlib.pyplot as plt
+import math
 
 def Logistic_Reression():
+    max_epoch = 20
     data = pd.read_csv('Data_vector_reviews.csv')
     X = data.values[::, 1:21]
     y = data.values[::, 0:1]
@@ -519,32 +523,17 @@ def Logistic_Reression():
         y_train, y_test = y[train_index], y[test_index]
     print(data["overall"].value_counts()/len(data))
 
-    lasso = []
-    Lambda = []
-  
-    for i in range(1, 9):
-        lassoModel = Lasso(alpha=i * 0.25, tol=0.0925)
-        lassoModel.fit(X_train, y_train)
-        scores = cross_val_score(lassoModel, X, y, cv=10)
-        avg_cross_val_score = mean(scores) * 100
-        lasso.append(avg_cross_val_score)
-        Lambda.append(i * 0.25)
-
-        # Loop to print the different values of cross-validation scores
-    for i in range(0, len(alpha)):
-        print(str(alpha[i]) + ' : ' + str(lasso[i]))
-
     #-----------------------------------------------Log_Regression--------------------------------------------------------
-    # lg_clf = LogisticRegression()
-    # y_train = y_train.ravel()
-    # lg_clf.fit(X_train, y_train)
-    #
-    # lg_clf_prediction = lg_clf.predict(X_test)
-    # print("Прогнозы:", lg_clf_prediction)
-    # print("Метки:", list(y_test))
-    # print(accuracy_score(lg_clf_prediction, y_test))
-    # print(metrics.classification_report(y_test, lg_clf_prediction))
-    # print(metrics.confusion_matrix(y_test, lg_clf_prediction))
+    lg_clf = LogisticRegression(penalty='l1', solver='liblinear')
+    y_train = y_train.ravel()
+    lg_clf.fit(X_train, y_train)
+
+    lg_clf_prediction = lg_clf.predict(X_test)
+    print("Прогнозы:", lg_clf_prediction)
+    print("Метки:", list(y_test))
+    print(accuracy_score(lg_clf_prediction, y_test))
+    print(metrics.classification_report(y_test, lg_clf_prediction))
+    print(metrics.confusion_matrix(y_test, lg_clf_prediction))
 
 # get_word_applicant()
 # get_vector_applicant()
