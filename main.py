@@ -90,6 +90,7 @@ import heapq
 # from PyDictionary import PyDictionary
 # from py_thesaurus import Thesaurus
 import gensim, logging
+
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
@@ -111,7 +112,6 @@ def lemmatize_sentence(tokens):
             pos = 'a'
         lemmatized_sentence.append(lemmatizer.lemmatize(word, pos))
     return lemmatized_sentence
-
 
 
 def get_word_applicant():
@@ -156,12 +156,10 @@ def get_word_applicant():
     return t
 
 
-
 def dict_stop_word():
-    myself_dict_stop = ['good','great','cool','ok','love','hate','i','perfect','kind','well','nice',
-                        'one','help','have','some','want','put','home','even','went','try','take']
+    myself_dict_stop = ['good', 'great', 'cool', 'ok', 'love', 'hate', 'i', 'perfect', 'kind', 'well', 'nice',
+                        'one', 'help', 'have', 'some', 'want', 'put', 'home', 'even', 'went', 'try', 'take']
     return myself_dict_stop
-
 
 
 def get_vector_applicant():
@@ -300,7 +298,7 @@ def get_vector_applicant():
         # print(countrr)
         if countrr < 3:
             del result_dict_popural_feature[x]
-    #print(result_dict_popural_feature)
+    # print(result_dict_popural_feature)
 
     stop_word_my = dict_stop_word()
     tempDict2 = dict(result_dict_popural_feature)
@@ -317,7 +315,6 @@ def get_vector_applicant():
         # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
 
-
 def syn():
     with open('Features_popular.txt', 'r') as Features_popular:
         features_text = json.load(Features_popular)
@@ -331,7 +328,6 @@ def syn():
                 lemmas.append(l.name())
         synonyms.update({word: lemmas.copy()})
     return synonyms
-
 
 
 def hypo():
@@ -350,7 +346,6 @@ def hypo():
     return Hyponyms
 
 
-
 def hype():
     with open('Features_popular.txt', 'r') as Features_popular:
         features_text = json.load(Features_popular)
@@ -367,7 +362,6 @@ def hype():
     return Hypernyms
 
 
-
 def semantic_score(word1, word2):
     try:
         w1 = wn.synset("%s.n.01" % (word1))
@@ -375,7 +369,6 @@ def semantic_score(word1, word2):
         return wn.wup_similarity(w1, w2, simulate_root=False)
     except:
         return 0
-
 
 
 def NegativeWord():
@@ -390,15 +383,14 @@ def NegativeWord():
         WordsStopResult = [word for word in analysis if word not in customStopWords]
         lemmitazer_output = lemmatize_sentence(WordsStopResult)
         i.update({"reviewText": lemmitazer_output})
-        del(i["label"])
+        del (i["label"])
 
-    #print(tag_negative_words)
+    # print(tag_negative_words)
 
     with open("Tag_nagative.txt", "w") as tag_negative:
         json.dump(tag_negative_words, tag_negative, indent=4)
 
     return tag_negative_words
-
 
 
 def get_full_vector():
@@ -430,36 +422,36 @@ def get_full_vector():
         sentence_tokens = i["reviewText"]
         # sentence_tokens = nltk.word_tokenize(sentence)
         sent_vec = {}
-        sent_vec.update({"overall" : i["overall"]})
+        sent_vec.update({"overall": i["overall"]})
         for token in features_text:
             flag = False
             if token in sentence_tokens:
-                    if token + '_NEG' in sentence_tokens:
-                        sent_vec.update({token : -1})
-                        flag = True
-                    else:
-                        sent_vec.update({token : 1})
-                        flag = True
+                if token + '_NEG' in sentence_tokens:
+                    sent_vec.update({token: -1})
+                    flag = True
+                else:
+                    sent_vec.update({token: 1})
+                    flag = True
             else:
                 for syno in synonym[token]:
                     if syno in sentence_tokens:
-                        count = semantic_score(syno,sentence_tokens[sentence_tokens.index(syno)])
+                        count = semantic_score(syno, sentence_tokens[sentence_tokens.index(syno)])
                         if (count >= 0.5):
-                            sent_vec.update({token : 1})
+                            sent_vec.update({token: 1})
                             flag = True
                             break
                     else:
-                        if syno+"_NEG" in sentence_tokens:
+                        if syno + "_NEG" in sentence_tokens:
                             count = semantic_score(syno, sentence_tokens[sentence_tokens.index(syno + "_NEG")][:-4])
                             if (count >= 0.5):
-                                sent_vec.update({token : -1})
+                                sent_vec.update({token: -1})
                                 flag = True
                                 break
             if not flag:
-                sent_vec.update({token : 0})
+                sent_vec.update({token: 0})
         sentence_vectors.append(sent_vec)
-    #print(sentence_vectors)
-    #sentence_vectors = np.asarray(sentence_vectors)
+    # print(sentence_vectors)
+    # sentence_vectors = np.asarray(sentence_vectors)
 
     print(sentence_vectors)
 
@@ -470,7 +462,6 @@ def get_full_vector():
         # запись нескольких строк
         writer.writerows(sentence_vectors)
 
-
     # sentence_vectors = np.matrix(sentence_vectors)
 
     # with open('Matrix_vectors.txt', 'wb') as f:
@@ -479,6 +470,8 @@ def get_full_vector():
     # #print(sentence_vectors)
 
     return sentence_vectors
+
+
 # from gensim.models import Word2Vec
 # from nltk.corpus import gutenberg
 # def word2_vec():
@@ -489,12 +482,12 @@ def get_full_vector():
 #     for w,s in sim:
 #         print(w,s)
 # def Thesaurus():
-    # input_word = "work"
-    # t = Thesaurus(input_word)
-    # print(t.get_synonym(pos='adj'))
-    # for i, j in enumerate(wn.synsets('dog')):
-    #     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
-    #     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
+# input_word = "work"
+# t = Thesaurus(input_word)
+# print(t.get_synonym(pos='adj'))
+# for i, j in enumerate(wn.synsets('dog')):
+#     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
+#     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
 
 
 from sklearn import metrics
@@ -507,6 +500,7 @@ from sklearn.model_selection import cross_val_score
 import matplotlib.pyplot as plt
 import math
 
+
 def Logistic_Reression():
     max_epoch = 20
     data = pd.read_csv('Data_vector_reviews.csv')
@@ -518,12 +512,12 @@ def Logistic_Reression():
 
     split = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=42)
     for train_index, test_index in split.split(X, y):
-        #print("TRAIN:", train_index, "TEST:", test_index)
+        # print("TRAIN:", train_index, "TEST:", test_index)
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
-    print(data["overall"].value_counts()/len(data))
+    print(data["overall"].value_counts() / len(data))
 
-    #-----------------------------------------------Log_Regression--------------------------------------------------------
+    # -----------------------------------------------Log_Regression--------------------------------------------------------
     lg_clf = LogisticRegression(penalty='l1', solver='liblinear')
     y_train = y_train.ravel()
     lg_clf.fit(X_train, y_train)
@@ -535,8 +529,62 @@ def Logistic_Reression():
     print(metrics.classification_report(y_test, lg_clf_prediction))
     print(metrics.confusion_matrix(y_test, lg_clf_prediction))
 
+
+from sklearn.tree import DecisionTreeClassifier
+import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report, confusion_matrix, log_loss
+
+
+def Decision_Tree():
+    data = pd.read_csv('Data_vector_reviews.csv')
+    X = data.values[::, 1:21]
+    y = data.values[::, 0:1]
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    print(len(X_train), " train +", len(X_test), "test")
+
+    split = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=42)
+    for train_index, test_index in split.split(X, y):
+        # print("TRAIN:", train_index, "TEST:", test_index)
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+    print(data["overall"].value_counts() / len(data))
+
+    tree_clf = DecisionTreeClassifier()
+    tree_clf.fit(X_train, y_train)
+    y_pred = tree_clf.predict(X_test)
+    # loss = log_loss(y_test, y_pred)
+    # print(loss)
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+
+from sklearn.ensemble import RandomForestClassifier
+def Forest_random():
+    data = pd.read_csv('Data_vector_reviews.csv')
+    X = data.values[::, 1:21]
+    y = data.values[::, 0:1]
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    print(len(X_train), " train +", len(X_test), "test")
+
+    split = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=42)
+    for train_index, test_index in split.split(X, y):
+        # print("TRAIN:", train_index, "TEST:", test_index)
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+    print(data["overall"].value_counts() / len(data))
+
+    model = RandomForestClassifier(n_estimators=100, bootstrap=True, max_features='sqrt')
+    model.fit(X_train, y_train)
+
+    model_predict = model.predict(X_test)
+    print(confusion_matrix(y_test, model_predict))
+    print(classification_report(y_test, model_predict))
+
+
 # get_word_applicant()
 # get_vector_applicant()
-#get_full_vector()
-Logistic_Reression()
-
+# get_full_vector()
+# Logistic_Reression()
+#Decision_Tree()
+Forest_random()
