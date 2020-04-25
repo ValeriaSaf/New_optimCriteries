@@ -1,1 +1,1 @@
-["material", "color", "arch", "wear", "term", "time", "individual", "pair", "weight", "foot", "situation", "size", "quality", "light", "fit", "fashion", "way", "activity", "style", "comfortable", "shoe"]
+["guitar", "function", "usefulness", "utility", "service", "company", "delivery", "needed", "cost", "education", "experience", "mic", "setting", "surround", "environment", "large", "choice", "pronounced", "voice", "vocalist", "singer", "stringed", "strung", "wire", "full"]
