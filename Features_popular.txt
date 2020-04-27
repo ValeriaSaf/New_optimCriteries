@@ -1,1 +1,1 @@
-["guitar", "other", "price", "training", "practice", "own", "quality", "tone", "speak", "sound", "degree", "tension", "color", "level", "stuff", "mic", "heavy", "right", "position", "item"]
+["guitar", "cost", "tone", "ambiance", "surround", "ambience", "pitch", "environment", "tension", "angled", "balance", "delivery", "color", "situation", "sound", "player", "strung", "wire"]

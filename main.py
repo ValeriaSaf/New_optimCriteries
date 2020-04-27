@@ -207,10 +207,11 @@ def get_vector_applicant():
     sort_amountWords = sorted(finder.word_fd.items(), key=operator.itemgetter(1))
     print(sort_amountWords)
 
+
     synonyms = {}
     lemmas = []
     for word, number in sort_amountWords:
-        if number > 15:
+        if number > 30:
             lemmas.clear()
             for syn in wn.synsets(word):
                 for l in syn.lemmas():
@@ -225,23 +226,27 @@ def get_vector_applicant():
                 lst[0] = origWord
                 sort_amountWords[sort_amountWords.index(tuple2)] = tuple(lst)
                 break
-    print(sort_amountWords)
+    #print(sort_amountWords)
+
+    dict_tag = dict(sort_amountWords)
+    wordsWithTags = dict(pos_tag(dict_tag.keys()))
+    #print(wordsWithTags)
 
     sort_amountWords_dict = dict(sort_amountWords)
     c = Counter()
     for word in sort_amountWords_dict:
         c.update(word)
-    print("result:")
-    print(sort_amountWords_dict)
+    # print("result:")
+    # print(sort_amountWords_dict)
 
     Hypernyms = {}
     Hyponyms = {}
     hyp = []
     for word, number in sort_amountWords_dict.items():
-        if number < 15:
+        if number < 35:
             hyp.clear()
             for i, j in enumerate(wn.synsets(word)):
-                if i < 2:
+                if i < 3:
                     x = list(chain(*[l.lemma_names() for l in j.hyponyms()]))
                     hyp.append(x)
             Hyponyms.update({word: hyp.copy()})
@@ -251,19 +256,23 @@ def get_vector_applicant():
         for lst in value:
             for word in lst:
                 for word_dict, number in sort_amountWords_dict.items():
-                    if number > 15:
+                    if number > 35:
                         if word_dict in lst:
                             sort_amountWords_dict.update({key: number})
                             break
     sorted_x = sorted(sort_amountWords_dict.items(), key=operator.itemgetter(1))
     print(sorted_x)
 
+    # with open("TEST.txt", "w") as f:
+    #     # for key,value in dict2.items():
+    #     json.dump(sorted_x, f)
+    #     # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
     dict_sort_amountWords = dict(sorted_x)
     # print(dict_sort_amountWords)
 
     result_dict_popural_feature = {}
-    alpha = 0.0085
+    alpha = 0.009
     for key, value in dict_sort_amountWords.items():
         if (value / count_all_words) >= alpha:
             result_dict_popural_feature.update({key: value})
@@ -278,7 +287,8 @@ def get_vector_applicant():
     pos_text1 = pos_tag(result_dict_popural_feature.keys())
     sent_clean = [x for (x, y) in pos_text1 if
                   (y != ('PRP') and y != ('DT') and y != ('CC') and y != ('VB') and y != ('VBP') and y != (
-                      'VBN') and y != ('VBG') and y != ('RB'))]
+                      'VBN') and y != ('VBG') and y != ('RB')) and y !=('JJ') and y!=('RBR') and y != ('JJR') and y != (
+                        'JJS') and y != ('RB') and y != ('RBS')]
 
     tempDict = dict(result_dict_popural_feature)
     for key1, value in tempDict.items():
@@ -308,8 +318,8 @@ def get_vector_applicant():
     with open("Features_popular.txt", "w") as Features_popular:
         # for key,value in dict2.items():
         json.dump(lst_features, Features_popular)
-        # featuresWithIdFile.write("{}: {}\n".format(key,value))
-
+    #     # featuresWithIdFile.write("{}: {}\n".format(key,value))
+get_vector_applicant()
 #Function finds all synonyms from features. Returns dict with synonyms.
 def syn():
     with open('Features_popular.txt', 'r') as Features_popular:
@@ -325,6 +335,18 @@ def syn():
         synonyms.update({word: lemmas.copy()})
     return synonyms
 
+# def syno():
+#     synonyms = []
+#
+#     for syn in wn.synsets("chemical"):
+#         for l in syn.lemmas():
+#             synonyms.append(l.name())
+#     print(set(synonyms))
+#
+#     for i, j in enumerate(wn.synsets('chemical')):
+#         print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
+#         print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
+# syno()
 #Function finds all hyponyms from features. Returns dict with hyponyms.
 def hypo():
     with open('Features_popular.txt', 'r') as Features_popular:
@@ -703,26 +725,55 @@ def clear_tag_Stanford():
 
 def list_clear_feature():
 
-    with open('Clear_Features_Stanford.txt', 'r') as Features_popular:
-        features_text = Features_popular.read()
-    new_str = features_text.replace("'",'"')
-    print(new_str)
+   #  with open('Clear_Features_Stanford.txt', 'r') as Features_popular:
+   #      features_text = Features_popular.read()
+   #  new_str = features_text.replace("'",'"')
+   #  new_str1 = new_str.replace('"""','"\'"')
+   #  new_str3 = new_str1.replace('""','"')
+   #  new_str4 = new_str3.replace('mic"ing', 'DEL')
+   #  new_str2 = new_str1.replace('"text":  "','"text": DEL')
+   # # new_str = re.sub(r"']", "DEL", new_str)
+   #
+   #  with open("Clear_Features_Stanford.txt", "w") as name_groups:
+   #      name_groups.write(new_str4)
+   #  name_groups.close()
 
-    with open("Clear_Features_Stanford.txt", "w") as name_groups:
-        name_groups.write(new_str)
 
-    # with open('Clear_Features_Stanford.txt', 'r') as clear_features_popular:
-    #     clear_feature_json = json.load(clear_features_popular)
-    #
-    # list_clear = []
-    # for i in clear_feature_json:
-    #     for st in i:
-    #         list_clear.append(st["text"])
-    #         # for k,v in st.items():
-    #         #     if k=="text":
-    #         #         list_clear.append(v)
-    # print(list_clear)
-list_clear_feature()
+    with open('Clear_Features_Stanford.txt', 'r') as clear_features_popular:
+        clear_feature_json = json.load(clear_features_popular)
+
+    for i in clear_feature_json:
+        for st in i:
+            del_lst = dict(st)
+            for key,value in del_lst.items():
+                if (key=="xpos" and value=="LS") or (key=="upos" and value=="PUNCT") or \
+                        (key=="xpos" and value=="CC") or (key=="xpos" and value=="ADD") or (key=="xpos" and value=="UH") or \
+                        (key=="xpos" and value=="VBP") or (key=="xpos" and value=="CD"):
+                    st.clear()
+    print(clear_feature_json)
+
+    list_clear = []
+    full_list = []
+    for i in clear_feature_json:
+        for st in i:
+            #list_clear.append(st["text"])
+            for k,v in st.items():
+                if k=="text":
+                    list_clear.append(v)
+        full_list.append(list_clear.copy())
+        list_clear.clear()
+    print(full_list)
+
+    with open("Features_Stanford.txt", "w") as name_groups:
+        file_text = ""
+        for lst in full_list:
+            for word in lst:
+                file_text += word+" "
+            if (len(lst) > 0):
+                file_text += "\n"
+        name_groups.write(file_text)
+
+#list_clear_feature()
 #get_word_application_Stanford()
 #clear_tag_Stanford()
 #get_word_applicant()
