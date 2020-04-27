@@ -1,1 +1,1 @@
-["guitar", "function", "usefulness", "utility", "service", "company", "delivery", "needed", "cost", "education", "experience", "mic", "setting", "surround", "environment", "large", "choice", "pronounced", "voice", "vocalist", "singer", "stringed", "strung", "wire", "full"]
+["guitar", "other", "price", "training", "practice", "own", "quality", "tone", "speak", "sound", "degree", "tension", "color", "level", "stuff", "mic", "heavy", "right", "position", "item"]

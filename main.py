@@ -99,7 +99,7 @@ import csv
 words = 20
 stemmer = SnowballStemmer('english')
 
-
+#function of WordNet lemmatizer
 def lemmatize_sentence(tokens):
     lemmatizer = WordNetLemmatizer()
     lemmatized_sentence = []
@@ -113,7 +113,7 @@ def lemmatize_sentence(tokens):
         lemmatized_sentence.append(lemmatizer.lemmatize(word, pos))
     return lemmatized_sentence
 
-
+#Function gets word or phrase applicant of feature. Use tokens,lemmatizer,tag. Make chunk and particular gramma.
 def get_word_applicant():
     with open('trunc_MusicInstrument.json', 'r') as f:
         jsonData = json.load(f)
@@ -151,20 +151,21 @@ def get_word_applicant():
                     t = ' '.join(word for word, pos in t.leaves())
                     file_handler.write(str(t) + "\n")
             dict1.update({i["id"]: pos_text})
-
+    print(dict1)
     file_handler.close()
     return t
 
 
+#Function keeps the dict, wich consists of the most popular useless words.
 def dict_stop_word():
     myself_dict_stop = ['good', 'great', 'cool', 'ok', 'love', 'hate', 'i', 'perfect', 'kind', 'well', 'nice',
                         'one', 'help', 'have', 'some', 'want', 'put', 'home', 'even', 'went', 'try', 'take']
     return myself_dict_stop
 
-
+#Function choosess special features from applicants.
 def get_vector_applicant():
     counter = 1
-    with open('Features.txt', 'r') as file_handler:
+    with open('Features_Stanford.txt', 'r') as file_handler:
         features_text = file_handler.readlines()
     # print(features_text)
 
@@ -258,10 +259,6 @@ def get_vector_applicant():
     sorted_x = sorted(sort_amountWords_dict.items(), key=operator.itemgetter(1))
     print(sorted_x)
 
-    with open("Features_on_Start.txt", "w") as Features_on_Start:
-        # for key,value in dict2.items():
-        json.dump(sorted_x, Features_on_Start)
-        # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
     dict_sort_amountWords = dict(sorted_x)
     # print(dict_sort_amountWords)
@@ -314,7 +311,7 @@ def get_vector_applicant():
         json.dump(lst_features, Features_popular)
         # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
-
+#Function finds all synonyms from features. Returns dict with synonyms.
 def syn():
     with open('Features_popular.txt', 'r') as Features_popular:
         features_text = json.load(Features_popular)
@@ -329,7 +326,7 @@ def syn():
         synonyms.update({word: lemmas.copy()})
     return synonyms
 
-
+#Function finds all hyponyms from features. Returns dict with hyponyms.
 def hypo():
     with open('Features_popular.txt', 'r') as Features_popular:
         features_text = json.load(Features_popular)
@@ -345,7 +342,7 @@ def hypo():
         Hyponyms.update({word: hyp.copy()})
     return Hyponyms
 
-
+#Function finds all hypernyms from features. Returns dict with hypernyms.
 def hype():
     with open('Features_popular.txt', 'r') as Features_popular:
         features_text = json.load(Features_popular)
@@ -370,7 +367,7 @@ def semantic_score(word1, word2):
     except:
         return 0
 
-
+#Function makes tag, that defines negative context
 def NegativeWord():
     with open('trunc_MusicInstrument.json', 'r') as f:
         jsonData = json.load(f)
@@ -386,13 +383,12 @@ def NegativeWord():
         del (i["label"])
 
     # print(tag_negative_words)
-
     with open("Tag_nagative.txt", "w") as tag_negative:
         json.dump(tag_negative_words, tag_negative, indent=4)
 
     return tag_negative_words
 
-
+#Function transfers features into vector space. Output is vector consists of 0,1,-1.
 def get_full_vector():
     with open('trunc_MusicInstrument.json', 'r') as f:
         jsonData = json.load(f)
@@ -462,32 +458,8 @@ def get_full_vector():
         # запись нескольких строк
         writer.writerows(sentence_vectors)
 
-    # sentence_vectors = np.matrix(sentence_vectors)
-
-    # with open('Matrix_vectors.txt', 'wb') as f:
-    #     for line in sentence_vectors:
-    #         np.savetxt(f, line, fmt='%.2f')
-    # #print(sentence_vectors)
 
     return sentence_vectors
-
-
-# from gensim.models import Word2Vec
-# from nltk.corpus import gutenberg
-# def word2_vec():
-#     sentences = [['first', 'sentence'], ['second', 'sentence']]
-#     # train word2vec on the two sentences
-#     model = gensim.models.Word2Vec(sentences, min_count=1)
-#     sim = model.wv.most_similar('first')
-#     for w,s in sim:
-#         print(w,s)
-# def Thesaurus():
-# input_word = "work"
-# t = Thesaurus(input_word)
-# print(t.get_synonym(pos='adj'))
-# for i, j in enumerate(wn.synsets('dog')):
-#     print("Hypernyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hypernyms()]))))
-#     print("Hyponyms:", ", ".join(list(chain(*[l.lemma_names() for l in j.hyponyms()]))))
 
 
 from sklearn import metrics
@@ -500,7 +472,7 @@ from sklearn.model_selection import cross_val_score
 import matplotlib.pyplot as plt
 import math
 
-
+#Function starts classifier on base logictic regression for vectors of features.
 def Logistic_Reression():
     max_epoch = 20
     data = pd.read_csv('Data_vector_reviews.csv')
@@ -534,7 +506,7 @@ from sklearn.tree import DecisionTreeClassifier
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix, log_loss
 
-
+#Function starts classifier on base decision tree for vectors of features.
 def Decision_Tree():
     data = pd.read_csv('Data_vector_reviews.csv')
     X = data.values[::, 1:21]
@@ -559,6 +531,7 @@ def Decision_Tree():
     print(classification_report(y_test, y_pred))
 
 from sklearn.ensemble import RandomForestClassifier
+#Function starts classifier on base forest random for vectors of features.
 def Forest_random():
     data = pd.read_csv('Data_vector_reviews.csv')
     X = data.values[::, 1:21]
@@ -580,8 +553,9 @@ def Forest_random():
     model_predict = model.predict(X_test)
     print(confusion_matrix(y_test, model_predict))
     print(classification_report(y_test, model_predict))
-
+#-----------------------------------------------------------Algorithm with using Stanford-parser------------------
 import stanza
+#Function marks each word with a tag of part of speech with Stanford's parser's help.
 def tag_with_Stanford():
     with open('trunc_MusicInstrument.json', 'r') as f:
         jsonData = json.load(f)
@@ -609,6 +583,7 @@ def tag_with_Stanford():
     with open("Tag_list_Stanford.txt", "w") as tag_list:
             json.dump(total, tag_list,indent=4)
 
+#Function finds name's group with Stanford's parser's help.
 def deparse_name_group():
     with open('trunc_MusicInstrument.json', 'r') as f:
         jsonData = json.load(f)
@@ -645,6 +620,112 @@ def deparse_name_group():
 
     with open("Name_group_Stanford.txt", "w") as name_group:
             json.dump(list_name_group, name_group,indent=4)
+
+#Function gets word or phrase applicant of feature. Use tokens,lemmatizer,tag. Make chunk and particular gramma with Stanford's parser's help.
+def get_word_application_Stanford():
+    with open('Tag_list_Stanford.txt', 'r') as f:
+        jsonData = json.load(f)
+
+    list_token = []
+    full_token_sent = []
+    for i in jsonData:
+        for st in i:
+            for key,value in st.items():
+                    if key=="text":
+                        list_token.append(value)
+        full_token_sent.append(list_token.copy())
+        list_token.clear()
+    #print(full_token_sent)
+
+    file_handler = open("Features_Stanford.txt", "w")
+    list_application_stanford = []
+    count = 0
+    for i in full_token_sent:
+        pos_text = pos_tag(i)
+        ChunkGramma = (r"Chunk:{(<NN>|<NNS>)+(<VB>|<VBD>|<MD>|<VBP>)?<DT>?(<NN>|<NNS>)} " "\n"
+                       r"{(<JJ>|<JJR>|<JJS>|<,>)+(<NN>|<NNS>)}" "\n"
+                       r"{<EX>(<JJ>|<JJR>|<JJS>)?((<NN>|<NNS>))?}" "\n"
+                       r"{<PRP>(<VB>|<VBD>|<MD>|<VBP>)<RB>?(<JJ>|<JJR>|<JJS>)+<CC>?(<JJ>|<JJR>|<JJS>|<NN>)?}" "\n"
+                       r" {<DT>(<VB>|<VBD>|<MD>|<VBP>)<DT>?(<RBS>|<RB>)?(<JJ>|<JJR>|<JJS>|<NN>|<,>)+}" "\n"
+                       r"{(<JJ>|<JJR>|<JJS>)+(<NN>|<NNS>)}" "\n"
+                       r"{(<JJ>|<JJR>|<JJS>|<,>)+(<NN>|<NNS>|<,>)+<CC>?<DT>?(<JJ>|<JJR>|<JJS>|<,>)+(<NN>|<NNS>|<,>)+}" "\n"
+                       r"{<PRP>(<VB>|<VBD>|<MD>|<VBP>)<RB>?<DT>?(<JJ>|<JJR>|<JJS>|<NN>|<,>)+}" "\n"
+                       r"{(<JJ>|<JJR>|<JJS>|<,>)+<CC>?(<JJ>|<JJR>|<JJS>|<,>)+}" "\n"
+                       r"{<PRP>(<VB>|<VBD>|<MD>|<VBP>)(<RB>|<RBR>|<RBS>|<,>)+}" "\n"
+                       r"{(<NN>|<NNS>|<,>)+<CC>?(<NN>|<NNS>|<,>)(<VB>|<VBD>|<MD>|<VBP>)?(<JJ>|<JJR>|<JJS>)+<CC>?(<JJ>|<JJR>|<JJS>|<NN>)?}" "\n"
+                       r"{(<JJ>|<JJR>|<JJS>|<RB>|<,>)+<IN><DT>(<NN>|<NNS>)<CC>?(<NN>|<NNS>)}" "\n"
+                       r"")
+        chunkParser = nltk.RegexpParser(ChunkGramma)
+        chunked = chunkParser.parse(pos_text)
+        # chunked.draw()
+
+        for subtree in chunked.subtrees():
+            count += 1
+            if subtree.label() == 'Chunk':
+                t = subtree
+                t = ' '.join(word for word, pos in t.leaves())
+                file_handler.write(str(t) + "\n")
+        list_application_stanford.append(pos_text)
+    file_handler.close()
+
+
+#Function clears list of applicants with Stanford's parser's help.
+def clear_tag_Stanford():
+    with open('Features_Stanford.txt', 'r') as Features_popular:
+        features_text = Features_popular.readlines()
+
+
+    all_text = []
+    total = []
+    for i in features_text:
+        nlp = stanza.Pipeline('en', processors='tokenize,pos,lemma', use_gpu=True, pos_batch_size=3000) # Build the pipeline, specify part-of-speech processor's batch size
+        doc = nlp(i) # Run the pipeline on the input text
+        wordDict = {}
+        for sentence in doc.sentences:
+            for word in sentence.words:
+                wordDict.update({"text":word.lemma,"xpos":word.xpos,"upos":word.upos})
+                all_text.append(wordDict.copy())
+                wordDict.clear()
+        total.append(all_text.copy())
+        all_text.clear()
+        print(total)
+
+    file_handler = open("Clear_Features_Stanford.txt", "w")
+    for i in total:
+        for lst in i:
+            del_lst = dict(lst)
+            for key,value in del_lst.items():
+                if (key=="xpos" and value=="AFX") or (key=="xpos" and value=="DT") or (key=="xpos" and value=="VB") or \
+                        (key=="xpos" and value=="RB") or (key=="xpos" and value=="MD") or (key=="xpos" and value=="PRP") or (key=="xpos" and value==","):
+                 lst.clear()
+    file_handler.write(str(total) + "\n")
+    file_handler.close()
+    #print(total)
+
+def list_clear_feature():
+
+    with open('Clear_Features_Stanford.txt', 'r') as Features_popular:
+        features_text = Features_popular.read()
+    new_str = features_text.replace("'",'"')
+    print(new_str)
+
+    with open("Clear_Features_Stanford.txt", "w") as name_groups:
+        name_groups.write(new_str)
+
+    # with open('Clear_Features_Stanford.txt', 'r') as clear_features_popular:
+    #     clear_feature_json = json.load(clear_features_popular)
+    #
+    # list_clear = []
+    # for i in clear_feature_json:
+    #     for st in i:
+    #         list_clear.append(st["text"])
+    #         # for k,v in st.items():
+    #         #     if k=="text":
+    #         #         list_clear.append(v)
+    # print(list_clear)
+list_clear_feature()
+#get_word_application_Stanford()
+#clear_tag_Stanford()
 #get_word_applicant()
 #get_vector_applicant()
 #get_full_vector()
