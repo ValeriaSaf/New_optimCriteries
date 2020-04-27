@@ -121,7 +121,6 @@ def get_word_applicant():
     file_handler = open("Features.txt", "w")
     dict1 = {}
     for i in jsonData:
-        # if (i["overall"] > 1) and (i["overall"] < 5):
         if (i["overall"] >= 1) and (i["overall"] <= 5):
             tok_text = word_tokenize(i["reviewText"])
             customStopWords = set(stopwords.words('english') + list(punctuation))
@@ -733,5 +732,5 @@ list_clear_feature()
 #Decision_Tree()
 #Forest_random()
 #tag_with_Stanford()
-deparse_name_group()
+#deparse_name_group()
 
