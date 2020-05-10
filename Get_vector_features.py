@@ -27,8 +27,9 @@ def lemmatize_sentence(tokens):
 
 #Function finds all synonyms from features. Returns dict with synonyms.
 def syn():
-    with open('Features_popular.txt', 'r') as Features_popular:
+    with open('Features_popular.txt', 'r', encoding = "utf_8_sig") as Features_popular:
         features_text = json.load(Features_popular)
+
 
     synonyms = {}
     lemmas = []
@@ -54,7 +55,7 @@ def syn():
 # syno()
 #Function finds all hyponyms from features. Returns dict with hyponyms.
 def hypo():
-    with open('Features_popular.txt', 'r') as Features_popular:
+    with open('Features_popular.txt', 'r',encoding = "utf_8_sig") as Features_popular:
         features_text = json.load(Features_popular)
 
     Hyponyms = {}
@@ -70,7 +71,7 @@ def hypo():
 
 #Function finds all hypernyms from features. Returns dict with hypernyms.
 def hype():
-    with open('Features_popular.txt', 'r') as Features_popular:
+    with open('Features_popular.txt', 'r', encoding = "utf_8_sig") as Features_popular:
         features_text = json.load(Features_popular)
 
     Hypernyms = {}
@@ -95,7 +96,7 @@ def semantic_score(word1, word2):
 
 #Function makes tag, that defines negative context
 def NegativeWord():
-    with open('trunc_MusicInstrument.json', 'r') as f:
+    with open('trunc.json', 'r', encoding = "utf_8_sig") as f:
         jsonData = json.load(f)
 
     tag_negative_words = list(copy(jsonData))
@@ -109,14 +110,14 @@ def NegativeWord():
         del (i["label"])
 
     # print(tag_negative_words)
-    with open("Tag_nagative.txt", "w") as tag_negative:
+    with open("Tag_nagative.txt", "w", encoding = "utf_8_sig") as tag_negative:
         json.dump(tag_negative_words, tag_negative, indent=4)
 
     return tag_negative_words
 
 #Function transfers features into vector space. Output is vector consists of 0,1,-1.
 def get_full_vector():
-    with open('trunc_MusicInstrument.json', 'r') as f:
+    with open('trunc.json', 'r', encoding = "utf_8_sig") as f:
         jsonData = json.load(f)
 
     corpus = []
@@ -133,7 +134,7 @@ def get_full_vector():
     print(corpus)
     # print(len(corpus))
 
-    with open('Features_popular.txt', 'r') as Features_popular:
+    with open('Features_popular.txt', 'r', encoding = "utf_8_sig") as Features_popular:
         features_text = json.load(Features_popular)
     print(features_text)
 

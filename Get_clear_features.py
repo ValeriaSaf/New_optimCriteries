@@ -18,7 +18,7 @@ def dict_stop_word():
 #Function choosess special features from applicants.
 def get_vector_applicant():
     counter = 1
-    with open('Features_Stanford.txt', 'r') as file_handler:
+    with open('Features.txt', 'r', encoding = "utf_8_sig") as file_handler:
         features_text = file_handler.readlines()
     # print(features_text)
 
@@ -47,13 +47,13 @@ def get_vector_applicant():
             count_all_words += 1
     print(count_all_words)
 
-    with open("FeaturesWithout_Reg_Comma_PRP.txt", "w") as featuresWithout_Reg_Comma_PR:
+    with open("FeaturesWithout_Reg_Comma_PRP.txt", "w", encoding = "utf_8_sig") as featuresWithout_Reg_Comma_PR:
         # for key,value in dict2.items():
         json.dump(dict2, featuresWithout_Reg_Comma_PR)
         # featuresWithIdFile.write("{}: {}\n".format(key,value))
 
     bigram_measures = nltk.collocations.BigramAssocMeasures()
-    with open("FeaturesWithout_Reg_Comma_PRP.txt", "r") as text:
+    with open("FeaturesWithout_Reg_Comma_PRP.txt", "r", encoding = "utf_8_sig") as text:
         tempdict = json.load(text)
         finder = BigramCollocationFinder.from_documents(tempdict.values())
     print(finder.nbest(bigram_measures.raw_freq, 15))
@@ -65,7 +65,7 @@ def get_vector_applicant():
     synonyms = {}
     lemmas = []
     for word, number in sort_amountWords:
-        if number > 30:
+        if number > 600:
             lemmas.clear()
             for syn in wn.synsets(word):
                 for l in syn.lemmas():
@@ -97,7 +97,7 @@ def get_vector_applicant():
     Hyponyms = {}
     hyp = []
     for word, number in sort_amountWords_dict.items():
-        if number < 35:
+        if number < 600:
             hyp.clear()
             for i, j in enumerate(wn.synsets(word)):
                 if i < 3:
@@ -169,7 +169,7 @@ def get_vector_applicant():
     lst_features = list(result_dict_popural_feature.keys())
     print(lst_features)
 
-    with open("Features_popular.txt", "w") as Features_popular:
+    with open("Features_popular.txt", "w", encoding = "utf_8_sig") as Features_popular:
         # for key,value in dict2.items():
         json.dump(lst_features, Features_popular)
 get_vector_applicant()

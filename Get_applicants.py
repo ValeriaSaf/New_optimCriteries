@@ -67,10 +67,10 @@ def lemmatize_sentence(tokens):
 
 #Function gets word or phrase applicant of feature. Use tokens,lemmatizer,tag. Make chunk and particular gramma.
 def get_word_applicant():
-    with open('trunc_MusicInstrument.json', 'r') as f:
+    with open('trunc.json', 'r', encoding = "utf_8_sig") as f:
         jsonData = json.load(f)
 
-    file_handler = open("Features.txt", "w")
+    file_handler = open("Features.txt", "w", encoding = "utf_8_sig")
     dict1 = {}
     for i in jsonData:
         if (i["overall"] >= 1) and (i["overall"] <= 5):
@@ -110,7 +110,7 @@ def get_word_applicant():
 
 #Function gets word or phrase applicant of feature. Use tokens,lemmatizer,tag. Make chunk and particular gramma with Stanford's parser's help.
 def get_word_application_Stanford():
-    with open('Tag_list_Stanford.txt', 'r') as f:
+    with open('Tag_list_Stanford.txt', 'r', encoding = "utf_8_sig") as f:
         jsonData = json.load(f)
 
     list_token = []
@@ -124,7 +124,7 @@ def get_word_application_Stanford():
         list_token.clear()
     #print(full_token_sent)
 
-    file_handler = open("Features_Stanford.txt", "w")
+    file_handler = open("Features_Stanford.txt", "w", encoding = "utf_8_sig")
     list_application_stanford = []
     count = 0
     for i in full_token_sent:
@@ -158,7 +158,7 @@ def get_word_application_Stanford():
 
 #Function clears list of applicants with Stanford's parser's help.
 def clear_tag_Stanford():
-    with open('Features_Stanford.txt', 'r') as Features_popular:
+    with open('Features_Stanford.txt', 'r',encoding = "utf_8_sig") as Features_popular:
         features_text = Features_popular.readlines()
 
 
@@ -177,7 +177,7 @@ def clear_tag_Stanford():
         all_text.clear()
         print(total)
 
-    file_handler = open("Clear_Features_Stanford.txt", "w")
+    file_handler = open("Clear_Features_Stanford.txt", "w", encoding = "utf_8_sig")
     for i in total:
         for lst in i:
             del_lst = dict(lst)
@@ -205,7 +205,7 @@ def list_clear_feature():
    #  name_groups.close()
 
 
-    with open('Clear_Features_Stanford.txt', 'r') as clear_features_popular:
+    with open('Clear_Features_Stanford.txt', 'r', encoding = "utf_8_sig") as clear_features_popular:
         clear_feature_json = json.load(clear_features_popular)
 
     for i in clear_feature_json:
@@ -230,7 +230,7 @@ def list_clear_feature():
         list_clear.clear()
     print(full_list)
 
-    with open("Features_Stanford.txt", "w") as name_groups:
+    with open("Features_Stanford.txt", "w", encoding = "utf_8_sig") as name_groups:
         file_text = ""
         for lst in full_list:
             for word in lst:
